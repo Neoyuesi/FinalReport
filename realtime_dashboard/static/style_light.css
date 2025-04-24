@@ -1,0 +1,54 @@
+body {
+    background-color: #f5f5f5;
+    color: #222;
+    font-family: 'Segoe UI', sans-serif;
+    margin: 20px;
+}
+
+h1 {
+    text-align: center;
+    color: #0077cc;
+}
+
+#top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+#top-bar button {
+    padding: 8px 16px;
+    font-size: 16px;
+    background-color: #0077cc;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+#data-display {
+    margin: auto;
+    width: 90%;
+}
+
+#data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+#data-table th, #data-table td {
+    border: 1px solid #ccc;
+    padding: 8px;
+    text-align: center;
+}
+
+#data-table th {
+    background-color: #e0e0e0;
+    color: #0077cc;
+}
+
+#map {
+    width: 90%;
+    margin: auto;
+}

@@ -1,0 +1,161 @@
+/* 整体布局 */
+body {
+    background-color: #121212;
+    color: #e0e0e0;
+    font-family: 'Segoe UI', sans-serif;
+    margin: 10px;
+}
+
+h1 {
+    text-align: center;
+    color: #00adb5;
+    font-size: 28px;
+}
+
+#top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+#top-bar button {
+    padding: 8px 16px;
+    font-size: 16px;
+    background-color: #00adb5;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+#threshold-bar {
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+#thresholdInput {
+    width: 80px;
+    padding: 5px;
+    font-size: 16px;
+    margin-left: 10px;
+    border-radius: 5px;
+    border: 1px solid #555;
+    background-color: #1e1e1e;
+    color: #fff;
+}
+
+/* 进度条 */
+#progress-container {
+    width: 90%;
+    background-color: #333;
+    border-radius: 20px;
+    overflow: hidden;
+    margin: 10px auto;
+}
+
+#progress-bar {
+    width: 100%;
+    background-color: #ddd;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+#progress-fill {
+    width: 0%;
+    background-color: #00adb5;
+    height: 25px;
+    text-align: center;
+    line-height: 25px;
+    color: white;
+    font-weight: bold;
+}
+
+/* 计数器 */
+#counters {
+    text-align: center;
+    margin: 10px 0;
+    font-size: 18px;
+}
+
+/* 饼图和柱状图布局 */
+#charts {
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    margin: 20px auto;
+    width: 90%;
+}
+
+#chart-container, #bar-container {
+    width: 300px;
+}
+
+/* 表格区域 */
+#data-display {
+    margin: auto;
+    width: 95%;
+}
+
+#data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: #1e1e1e;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+#data-table th, #data-table td {
+    border: 1px solid #444;
+    padding: 8px;
+    text-align: center;
+}
+
+#data-table th {
+    background-color: #222831;
+    color: #00adb5;
+    font-size: 16px;
+}
+
+#data-table td {
+    font-size: 14px;
+}
+
+/* 地图 */
+#map {
+    width: 95%;
+    margin: 20px auto;
+    border: 2px solid #00adb5;
+    border-radius: 15px;
+}
+
+/* 手机端自适应 */
+@media (max-width: 600px) {
+    #top-bar {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    #top-bar button {
+        width: 90%;
+    }
+
+    h1 {
+        font-size: 22px;
+    }
+
+    #charts {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #thresholdInput {
+        width: 60px;
+    }
+
+    #data-table th, #data-table td {
+        font-size: 12px;
+        padding: 6px;
+    }
+}

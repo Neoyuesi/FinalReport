@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Real-Time Noise Monitoring Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css" id="theme-link">
+    <script src="https://cdn.socket.io/4.3.2/socket.io.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        .sortable:hover {
+            cursor: pointer;
+            color: #00adb5;
+        }
+    </style>
+</head>
+<body>
+    <div id="top-bar">
+        <h1>Real-Time Noise Monitoring Dashboard</h1>
+        <button onclick="toggleTheme()">🌗 Theme Switch</button>
+        <button onclick="playHistory()">📅 Play History</button>
+    </div>
+
+    <div id="threshold-bar">
+        <label for="thresholdInput">Set Alarm Threshold (Leq):</label>
+        <input type="number" id="thresholdInput" value="85" onchange="updateThreshold()" />
+    </div>
+
+    <div id="progress-container">
+        <div id="progress-bar">
+            <div id="progress-fill">0%</div>
+        </div>
+    </div>
+
+    <div id="counters">
+        <div id="counter">🚨 Abnormal Events: 0</div>
+    </div>
+
+    <div id="charts">
+        <div id="chart-container">
+            <canvas id="classPieChart" width="300" height="300"></canvas>
+        </div>
+        <div id="bar-container">
+            <canvas id="classBarChart" width="300" height="300"></canvas>
+        </div>
+    </div>
+
+    <div id="data-display">
+        <table id="data-table">
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Type</th>
+                    <th>Group</th>
+                    <th class="sortable" onclick="sortTableByDOA()">DOA (°)</th> <!-- sortable -->
+                    <th>Policy</th>
+                    <th>Severity</th>
+                    <th>Leq (dB)</th>
+                    <th>Abnormal</th>
+                    <th>Reason</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+
+    <div id="map" style="height: 500px; margin-top: 20px;"></div>
+
+    <audio id="alert-sound" src="/static/alert.mp3"></audio>
+
+    <script>
+        var socket = io();
+        var map = L.map('map').setView([55.9110, -3.3245], 16);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19
+        }).addTo(map);
+
+        var lastPoint = null;
+        var polylinePoints = [];
+        var historyMarkers = [];
+        var abnormalCounter = 0;
+        var normalCounter = 0;
+        var totalTarget = 50;
+        var leqThreshold = 85;
+        var ascending = true; // for DOA sorting
+
+        const ctx1 = document.getElementById('classPieChart').getContext('2d');
+        const classPieChart = new Chart(ctx1, {
+            type: 'pie',
+            data: {
+                labels: ['Human', 'Traffic', 'Industrial', 'Animal', 'Other'],
+                datasets: [{
+                    data: [0, 0, 0, 0, 0],
+                    backgroundColor: ['orange', 'green', 'blue', 'purple', 'gray']
+                }]
+            },
+            options: {
+                plugins: {legend: {position: 'bottom'}}
+            }
+        });
+
+        const ctx2 = document.getElementById('classBarChart').getContext('2d');
+        const classBarChart = new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: ['Human', 'Traffic', 'Industrial', 'Animal', 'Other'],
+                datasets: [{
+                    label: 'Counts',
+                    data: [0, 0, 0, 0, 0],
+                    backgroundColor: ['orange', 'green', 'blue', 'purple', 'gray']
+                }]
+            },
+            options: {
+                scales: {y: {beginAtZero: true}},
+                plugins: {legend: {display: false}}
+            }
+        });
+
+        socket.on('new_data', function(data) {
+            console.log(data);
+
+            var isAbnormal = (data.abnormal === true || data.abnormal === "True");
+
+            var table = document.getElementById("data-table").getElementsByTagName('tbody')[0];
+            var newRow = table.insertRow(0);
+            newRow.innerHTML = `
+                <td>${data.timestamp}</td>
+                <td>${data.classification}</td>
+                <td>${data.group_type}</td>
+                <td>${parseFloat(data.doa_angle).toFixed(1)}</td>
+                <td>${data.alarm_policy}</td>
+                <td style="color:${data.severity_level === 'Severe' ? 'red' : (data.severity_level === 'Moderate' ? 'orange' : 'green')}">${data.severity_level}</td>
+                <td>${parseFloat(data.Leq).toFixed(1)}</td>
+                <td style="color:${isAbnormal ? 'red' : 'green'}">${isAbnormal}</td>
+                <td>${data.alarm_policy}</td>
+            `;
+
+            var color = isAbnormal ? 'red' : 'green';
+            var marker = L.circleMarker([data.lat, data.lon], {
+                color: color,
+                radius: 8,
+                fillOpacity: 0.8
+            }).addTo(map)
+              .bindPopup(`<b>${data.classification}</b><br>Leq: ${parseFloat(data.Leq).toFixed(1)} dB<br>Severity: ${data.severity_level}<br>DOA: ${parseFloat(data.doa_angle).toFixed(1)}°`)
+              .openPopup();
+
+            historyMarkers.push(marker);
+
+            // 绘制声源方向箭头
+            var arrowLength = 20; // pixels
+            var angleRad = data.doa_angle * Math.PI / 180;
+            var start = map.latLngToContainerPoint([data.lat, data.lon]);
+            var end = L.point(start.x + arrowLength * Math.cos(angleRad), start.y - arrowLength * Math.sin(angleRad));
+            var startLatLng = map.containerPointToLatLng(start);
+            var endLatLng = map.containerPointToLatLng(end);
+            L.polyline([startLatLng, endLatLng], {color: color, weight: 2, opacity: 0.7, dashArray: "5,5"}).addTo(map);
+
+            var currentPoint = [data.lat, data.lon];
+            polylinePoints.push(currentPoint);
+            if (polylinePoints.length >= 2) {
+                var polyline = L.polyline(polylinePoints, {color: 'blue'}).addTo(map);
+            }
+
+            if (isAbnormal) {
+                abnormalCounter++;
+                document.getElementById('counter').innerHTML = `🚨 Abnormal Events: ${abnormalCounter}`;
+                var alertSound = document.getElementById('alert-sound');
+                alertSound.play();
+            } else {
+                normalCounter++;
+            }
+
+            var idx = ['Human', 'Traffic', 'Industrial', 'Animal', 'Other'].indexOf(data.group_type);
+            if (idx >= 0) {
+                classPieChart.data.datasets[0].data[idx]++;
+                classBarChart.data.datasets[0].data[idx]++;
+                classPieChart.update();
+                classBarChart.update();
+            }
+
+            var progress = (normalCounter + abnormalCounter) / totalTarget * 100;
+            document.getElementById('progress-fill').style.width = progress + '%';
+            document.getElementById('progress-fill').innerText = `${progress.toFixed(1)}%`;
+        });
+
+        function sortTableByDOA() {
+            var table = document.getElementById("data-table").getElementsByTagName('tbody')[0];
+            var rows = Array.from(table.rows);
+            rows.sort(function(a, b) {
+                var doaA = parseFloat(a.cells[3].innerText);
+                var doaB = parseFloat(b.cells[3].innerText);
+                return ascending ? doaA - doaB : doaB - doaA;
+            });
+            ascending = !ascending;
+            rows.forEach(row => table.appendChild(row));
+        }
+
+        function toggleTheme() {
+            var themeLink = document.getElementById('theme-link');
+            if (themeLink.getAttribute('href') === '/static/style.css') {
+                themeLink.setAttribute('href', '/static/style_light.css');
+            } else {
+                themeLink.setAttribute('href', '/static/style.css');
+            }
+        }
+
+        function playHistory() {
+            if (historyMarkers.length === 0) return;
+            var index = 0;
+            var interval = setInterval(() => {
+                if (index >= historyMarkers.length) {
+                    clearInterval(interval);
+                    return;
+                }
+                historyMarkers[index].openPopup();
+                index++;
+            }, 1000);
+        }
+
+        function updateThreshold() {
+            var input = document.getElementById('thresholdInput').value;
+            leqThreshold = parseFloat(input);
+            alert(`Threshold updated to ${leqThreshold} dB`);
+        }
+    </script>
+</body>
+</html>
