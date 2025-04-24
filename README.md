@@ -78,20 +78,33 @@ CPU (Intel i7 or above) or GPU acceleration for faster model inference.
 
 ## Demo Screenshots
 
-### Real-time Noise Monitoring Dashboard
+###  Real-time Noise Monitoring Dashboard
 
 The dashboard below demonstrates real-time noise classification, sound source localization (via DOA angle), and anomaly detection with severity-level policy handling. Each acoustic event is visualized with its category, direction, and alarm status.
 
 ![Real-time Dashboard Overview](realtime_dashboard.png)
 
--  Pie chart: Distribution of noise types (Human, Traffic, Industrial, Animal)
--  Bar chart: Count of detected events by category
--  Table: Real-time log of classified acoustic events including:
-  - Type and Group
+-  **Pie chart**: Distribution of noise types (Human, Traffic, Industrial, Animal)  
+-  **Bar chart**: Count of detected events by category  
+-  **Event Table**: Displays acoustic event details:
+  - Type & Group
   - DOA (Direction of Arrival)
   - Severity Level
   - Leq (dB)
-  - Alarm Status (Abnormal flag + Reason)
+  - Alarm Status (flag + reason)
+
+---
+
+###  Acoustic Event Localization (OpenStreetMap-based)
+
+The figure below shows the geo-spatial visualization of detected sound sources using TDOA-based localization overlaid on a map. Each point corresponds to an acoustic event (color-coded), with direction lines representing estimated arrival angles.
+
+![Localization Map](localization_map.png)
+
+>  Built using OpenStreetMap + Leaflet.js  
+>  Dynamic plotting of localized acoustic events  
+>  Useful for assessing spatial noise distribution in residential or industrial zones
+
 
 
 ## Citation
