@@ -1,5 +1,5 @@
 # Noise Monitoring and Sound Source Localization System
-**Real-time Environmental Noise Detection, Classification, Localization, and Anomaly Alerting System
+Real-time Environmental Noise Detection, Classification, Localization, and Anomaly Alerting System
 
 ## Overview
 
