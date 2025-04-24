@@ -18,16 +18,22 @@ The system architecture integrates acoustic sensors, machine learning models, cl
 
 ## Project Structure
 
-├── datasets/                  # Preprocessed audio and metadata
-├── models/                     # Trained multi-task models (h5 files)
-├── dashboard/                  # Flask + Socket.IO real-time visualization app
-├── localization/               # TDOA-based sound source localization modules
-├── mqtt_client/                # MQTT publisher scripts for cloud transmission
-├── simulation/                 # Synthetic data generation and visualization
-├── inference/                  # Batch and real-time inference scripts
-├── README.md                   # Project documentation (this file)
-├── requirements.txt            # Python package dependencies
-└── LICENSE                     # License file (e.g., MIT License)
+```plaintext
+project_root/
+├── datasets/               # Preprocessed audio and metadata
+├── models/                 # Trained multi-task models (.h5 files)
+├── dashboard/              # Flask + Socket.IO real-time visualization app
+├── localization/           # TDOA-based sound source localization modules
+├── mqtt_client/            # MQTT publisher scripts for cloud transmission
+├── simulation/             # Synthetic data generation and visualization
+├── inference/              # Batch and real-time inference scripts
+├── train_multitask_model.py       # Multi-task model training script
+├── main_inference_fullsystem.py   # Real-time inference and dashboard runner
+├── simulate_data.py                # Simulation and synthetic data generator
+├── requirements.txt        # Python package dependencies
+├── README.md               # Project documentation (this file)
+└── LICENSE                 # License file (e.g., MIT License)
+```
 
 ## Installation
 1.Clone the repository:
